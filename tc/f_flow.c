@@ -147,7 +147,8 @@ static int flow_parse_opt(struct filter_util *fu, char *handle,
 		}
 	}
 
-	tail = addattr_nest(n, 4096, TCA_OPTIONS);
+	tail = NLMSG_TAIL(n);
+	addattr_l(n, 4096, TCA_OPTIONS, NULL, 0);
 
 	while (argc > 0) {
 		if (matches(*argv, "map") == 0) {
@@ -258,7 +259,7 @@ static int flow_parse_opt(struct filter_util *fu, char *handle,
 		addattr32(n, 4096, TCA_FLOW_XOR, xor);
 	}
 
-	addattr_nest_end(n, tail);
+	tail->rta_len = (void *)NLMSG_TAIL(n) - (void *)tail;
 	return 0;
 }
 

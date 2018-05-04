@@ -50,7 +50,8 @@ static int route_parse_opt(struct filter_util *qu, char *handle, int argc, char 
 	if (argc == 0)
 		return 0;
 
-	tail = addattr_nest(n, 4096, TCA_OPTIONS);
+	tail = NLMSG_TAIL(n);
+	addattr_l(n, 4096, TCA_OPTIONS, NULL, 0);
 
 	while (argc > 0) {
 		if (matches(*argv, "to") == 0) {
@@ -127,7 +128,7 @@ static int route_parse_opt(struct filter_util *qu, char *handle, int argc, char 
 		}
 		argc--; argv++;
 	}
-	addattr_nest_end(n, tail);
+	tail->rta_len = (void *) NLMSG_TAIL(n) - (void *) tail;
 	if (order) {
 		fh &= ~0x7F00;
 		fh |= (order<<8)&0x7F00;

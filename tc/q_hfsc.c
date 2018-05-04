@@ -201,7 +201,9 @@ hfsc_parse_class_opt(struct qdisc_util *qu, int argc, char **argv,
 		return -1;
 	}
 
-	tail = addattr_nest(n, 1024, TCA_OPTIONS);
+	tail = NLMSG_TAIL(n);
+
+	addattr_l(n, 1024, TCA_OPTIONS, NULL, 0);
 	if (rsc_ok)
 		addattr_l(n, 1024, TCA_HFSC_RSC, &rsc, sizeof(rsc));
 	if (fsc_ok)
@@ -209,7 +211,7 @@ hfsc_parse_class_opt(struct qdisc_util *qu, int argc, char **argv,
 	if (usc_ok)
 		addattr_l(n, 1024, TCA_HFSC_USC, &usc, sizeof(usc));
 
-	addattr_nest_end(n, tail);
+	tail->rta_len = (void *) NLMSG_TAIL(n) - (void *) tail;
 	return 0;
 }
 

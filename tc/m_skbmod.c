@@ -142,7 +142,8 @@ static int parse_skbmod(struct action_util *a, int *argc_p, char ***argv_p,
 		skbmod_usage();
 	}
 
-	tail = addattr_nest(n, MAX_MSG, tca_id);
+	tail = NLMSG_TAIL(n);
+	addattr_l(n, MAX_MSG, tca_id, NULL, 0);
 	addattr_l(n, MAX_MSG, TCA_SKBMOD_PARMS, &p, sizeof(p));
 
 	if (daddr)
@@ -152,7 +153,7 @@ static int parse_skbmod(struct action_util *a, int *argc_p, char ***argv_p,
 	if (saddr)
 		addattr_l(n, MAX_MSG, TCA_SKBMOD_SMAC, sbuf, ETH_ALEN);
 
-	addattr_nest_end(n, tail);
+	tail->rta_len = (void *)NLMSG_TAIL(n) - (void *)tail;
 
 	*argc_p = argc;
 	*argv_p = argv;

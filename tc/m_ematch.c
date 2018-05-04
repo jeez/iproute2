@@ -200,13 +200,13 @@ static int parse_tree(struct nlmsghdr *n, struct ematch *tree)
 	struct ematch *t;
 
 	for (t = tree; t; t = t->next) {
-		struct rtattr *tail;
+		struct rtattr *tail = NLMSG_TAIL(n);
 		struct tcf_ematch_hdr hdr = { .flags = t->relation };
 
 		if (t->inverted)
 			hdr.flags |= TCF_EM_INVERT;
 
-		tail = addattr_nest(n, MAX_MSG, index++);
+		addattr_l(n, MAX_MSG, index++, NULL, 0);
 
 		if (t->child) {
 			__u32 r = t->child_ref;
@@ -241,7 +241,7 @@ static int parse_tree(struct nlmsghdr *n, struct ematch *tree)
 				return -1;
 		}
 
-		addattr_nest_end(n, tail);
+		tail->rta_len = (void *) NLMSG_TAIL(n) - (void *) tail;
 	}
 
 	return 0;
@@ -366,16 +366,18 @@ int parse_ematch(int *argc_p, char ***argv_p, int tca_id, struct nlmsghdr *n)
 			.progid = TCF_EM_PROG_TC
 		};
 
-		tail = addattr_nest(n, MAX_MSG, tca_id);
+		tail = NLMSG_TAIL(n);
+		addattr_l(n, MAX_MSG, tca_id, NULL, 0);
 		addattr_l(n, MAX_MSG, TCA_EMATCH_TREE_HDR, &hdr, sizeof(hdr));
 
-		tail_list = addattr_nest(n, MAX_MSG, TCA_EMATCH_TREE_LIST);
+		tail_list = NLMSG_TAIL(n);
+		addattr_l(n, MAX_MSG, TCA_EMATCH_TREE_LIST, NULL, 0);
 
 		if (parse_tree(n, ematch_root) < 0)
 			return -1;
 
-		addattr_nest_end(n, tail_list);
-		addattr_nest_end(n, tail);
+		tail_list->rta_len = (void *) NLMSG_TAIL(n) - (void *) tail_list;
+		tail->rta_len = (void *) NLMSG_TAIL(n) - (void *) tail;
 	}
 
 	*argc_p = ematch_argc;

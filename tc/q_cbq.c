@@ -165,7 +165,8 @@ static int cbq_parse_opt(struct qdisc_util *qu, int argc, char **argv, struct nl
 	lss.change = TCF_CBQ_LSS_MAXIDLE|TCF_CBQ_LSS_EWMA|TCF_CBQ_LSS_AVPKT;
 	lss.avpkt = avpkt;
 
-	tail = addattr_nest(n, 1024, TCA_OPTIONS);
+	tail = NLMSG_TAIL(n);
+	addattr_l(n, 1024, TCA_OPTIONS, NULL, 0);
 	addattr_l(n, 1024, TCA_CBQ_RATE, &r, sizeof(r));
 	addattr_l(n, 1024, TCA_CBQ_LSSOPT, &lss, sizeof(lss));
 	addattr_l(n, 3024, TCA_CBQ_RTAB, rtab, 1024);
@@ -176,7 +177,7 @@ static int cbq_parse_opt(struct qdisc_util *qu, int argc, char **argv, struct nl
 			printf("%u ", rtab[i]);
 		printf("\n");
 	}
-	addattr_nest_end(n, tail);
+	tail->rta_len = (void *) NLMSG_TAIL(n) - (void *) tail;
 	return 0;
 }
 
@@ -418,7 +419,8 @@ static int cbq_parse_class_opt(struct qdisc_util *qu, int argc, char **argv, str
 		lss.change |= TCF_CBQ_LSS_EWMA;
 	}
 
-	tail = addattr_nest(n, 1024, TCA_OPTIONS);
+	tail = NLMSG_TAIL(n);
+	addattr_l(n, 1024, TCA_OPTIONS, NULL, 0);
 	if (lss.change) {
 		lss.change |= TCF_CBQ_LSS_FLAGS;
 		addattr_l(n, 1024, TCA_CBQ_LSSOPT, &lss, sizeof(lss));
@@ -438,7 +440,7 @@ static int cbq_parse_class_opt(struct qdisc_util *qu, int argc, char **argv, str
 			printf("\n");
 		}
 	}
-	addattr_nest_end(n, tail);
+	tail->rta_len = (void *) NLMSG_TAIL(n) - (void *) tail;
 	return 0;
 }
 

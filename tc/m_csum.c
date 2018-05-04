@@ -138,9 +138,10 @@ parse_csum(struct action_util *a, int *argc_p,
 		}
 	}
 
-	tail = addattr_nest(n, MAX_MSG, tca_id);
+	tail = NLMSG_TAIL(n);
+	addattr_l(n, MAX_MSG, tca_id, NULL, 0);
 	addattr_l(n, MAX_MSG, TCA_CSUM_PARMS, &sel, sizeof(sel));
-	addattr_nest_end(n, tail);
+	tail->rta_len = (char *)NLMSG_TAIL(n) - (char *)tail;
 
 	*argc_p = argc;
 	*argv_p = argv;

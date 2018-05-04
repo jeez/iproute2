@@ -222,9 +222,10 @@ parse_direction(struct action_util *a, int *argc_p, char ***argv_p,
 		}
 	}
 
-	tail = addattr_nest(n, MAX_MSG, tca_id);
+	tail = NLMSG_TAIL(n);
+	addattr_l(n, MAX_MSG, tca_id, NULL, 0);
 	addattr_l(n, MAX_MSG, TCA_MIRRED_PARMS, &p, sizeof(p));
-	addattr_nest_end(n, tail);
+	tail->rta_len = (void *) NLMSG_TAIL(n) - (void *) tail;
 
 	*argc_p = argc;
 	*argv_p = argv;

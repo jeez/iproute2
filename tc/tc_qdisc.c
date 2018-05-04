@@ -182,13 +182,14 @@ static int tc_qdisc_modify(int cmd, unsigned int flags, int argc, char **argv)
 			return -1;
 		}
 
-		tail = addattr_nest(&req.n, sizeof(req), TCA_STAB);
+		tail = NLMSG_TAIL(&req.n);
+		addattr_l(&req.n, sizeof(req), TCA_STAB, NULL, 0);
 		addattr_l(&req.n, sizeof(req), TCA_STAB_BASE, &stab.szopts,
 			  sizeof(stab.szopts));
 		if (stab.data)
 			addattr_l(&req.n, sizeof(req), TCA_STAB_DATA, stab.data,
 				  stab.szopts.tsize * sizeof(__u16));
-		addattr_nest_end(&req.n, tail);
+		tail->rta_len = (void *)NLMSG_TAIL(&req.n) - (void *)tail;
 		if (stab.data)
 			free(stab.data);
 	}

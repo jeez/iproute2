@@ -67,7 +67,8 @@ static int fw_parse_opt(struct filter_util *qu, char *handle, int argc, char **a
 	if (argc == 0)
 		return 0;
 
-	tail = addattr_nest(n, 4096, TCA_OPTIONS);
+	tail = NLMSG_TAIL(n);
+	addattr_l(n, 4096, TCA_OPTIONS, NULL, 0);
 
 	if (mask_set)
 		addattr32(n, MAX_MSG, TCA_FW_MASK, mask);
@@ -118,7 +119,7 @@ static int fw_parse_opt(struct filter_util *qu, char *handle, int argc, char **a
 		}
 		argc--; argv++;
 	}
-	addattr_nest_end(n, tail);
+	tail->rta_len = (void *) NLMSG_TAIL(n) - (void *) tail;
 	return 0;
 }
 

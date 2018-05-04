@@ -148,12 +148,13 @@ static int red_parse_opt(struct qdisc_util *qu, int argc, char **argv,
 	}
 	opt.Scell_log = parm;
 
-	tail = addattr_nest(n, 1024, TCA_OPTIONS);
+	tail = NLMSG_TAIL(n);
+	addattr_l(n, 1024, TCA_OPTIONS, NULL, 0);
 	addattr_l(n, 1024, TCA_RED_PARMS, &opt, sizeof(opt));
 	addattr_l(n, 1024, TCA_RED_STAB, sbuf, 256);
 	max_P = probability * pow(2, 32);
 	addattr_l(n, 1024, TCA_RED_MAX_P, &max_P, sizeof(max_P));
-	addattr_nest_end(n, tail);
+	tail->rta_len = (void *) NLMSG_TAIL(n) - (void *) tail;
 	return 0;
 }
 

@@ -50,7 +50,8 @@ static int veth_parse_opt(struct link_util *lu, int argc, char **argv,
 	ifm->ifi_change = 0;
 	ifm->ifi_index = 0;
 
-	data = addattr_nest(n, 1024, VETH_INFO_PEER);
+	data = NLMSG_TAIL(n);
+	addattr_l(n, 1024, VETH_INFO_PEER, NULL, 0);
 
 	n->nlmsg_len += sizeof(struct ifinfomsg);
 
@@ -69,7 +70,7 @@ static int veth_parse_opt(struct link_util *lu, int argc, char **argv,
 	ifm->ifi_change = ifi_change;
 	ifm->ifi_index = ifi_index;
 
-	addattr_nest_end(n, data);
+	data->rta_len = (void *)NLMSG_TAIL(n) - (void *)data;
 	return argc - 1 - err;
 }
 
