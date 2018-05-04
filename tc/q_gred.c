@@ -105,11 +105,12 @@ static int init_gred(struct qdisc_util *qu, int argc, char **argv,
 
 	DPRINTF("TC_GRED: sending DPs=%u def_DP=%u\n", opt.DPs, opt.def_DP);
 	n->nlmsg_flags |= NLM_F_CREATE;
-	tail = addattr_nest(n, 1024, TCA_OPTIONS);
+	tail = NLMSG_TAIL(n);
+	addattr_l(n, 1024, TCA_OPTIONS, NULL, 0);
 	addattr_l(n, 1024, TCA_GRED_DPS, &opt, sizeof(struct tc_gred_sopt));
 	if (limit)
 		addattr32(n, 1024, TCA_GRED_LIMIT, limit);
-	addattr_nest_end(n, tail);
+	tail->rta_len = (void *) NLMSG_TAIL(n) - (void *) tail;
 	return 0;
 }
 /*
@@ -256,12 +257,13 @@ static int gred_parse_opt(struct qdisc_util *qu, int argc, char **argv, struct n
 	}
 	opt.Scell_log = parm;
 
-	tail = addattr_nest(n, 1024, TCA_OPTIONS);
+	tail = NLMSG_TAIL(n);
+	addattr_l(n, 1024, TCA_OPTIONS, NULL, 0);
 	addattr_l(n, 1024, TCA_GRED_PARMS, &opt, sizeof(opt));
 	addattr_l(n, 1024, TCA_GRED_STAB, sbuf, 256);
 	max_P = probability * pow(2, 32);
 	addattr32(n, 1024, TCA_GRED_MAX_P, max_P);
-	addattr_nest_end(n, tail);
+	tail->rta_len = (void *) NLMSG_TAIL(n) - (void *) tail;
 	return 0;
 }
 

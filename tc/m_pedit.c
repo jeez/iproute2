@@ -685,7 +685,8 @@ int parse_pedit(struct action_util *a, int *argc_p, char ***argv_p, int tca_id,
 		}
 	}
 
-	tail = addattr_nest(n, MAX_MSG, tca_id);
+	tail = NLMSG_TAIL(n);
+	addattr_l(n, MAX_MSG, tca_id, NULL, 0);
 	if (!sel.extended) {
 		addattr_l(n, MAX_MSG, TCA_PEDIT_PARMS, &sel,
 			  sizeof(sel.sel) +
@@ -698,7 +699,7 @@ int parse_pedit(struct action_util *a, int *argc_p, char ***argv_p, int tca_id,
 		pedit_keys_ex_addattr(&sel, n);
 	}
 
-	addattr_nest_end(n, tail);
+	tail->rta_len = (void *)NLMSG_TAIL(n) - (void *)tail;
 
 	*argc_p = argc;
 	*argv_p = argv;

@@ -188,7 +188,8 @@ static int rsvp_parse_opt(struct filter_util *qu, char *handle, int argc,
 	if (argc == 0)
 		return 0;
 
-	tail = addattr_nest(n, 4096, TCA_OPTIONS);
+	tail = NLMSG_TAIL(n);
+	addattr_l(n, 4096, TCA_OPTIONS, NULL, 0);
 
 	while (argc > 0) {
 		if (matches(*argv, "session") == 0) {
@@ -293,7 +294,7 @@ static int rsvp_parse_opt(struct filter_util *qu, char *handle, int argc,
 
 	if (pinfo_ok)
 		addattr_l(n, 4096, TCA_RSVP_PINFO, &pinfo, sizeof(pinfo));
-	addattr_nest_end(n, tail);
+	tail->rta_len = (void *) NLMSG_TAIL(n) - (void *) tail;
 	return 0;
 }
 

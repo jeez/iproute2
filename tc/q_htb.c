@@ -98,12 +98,13 @@ static int htb_parse_opt(struct qdisc_util *qu, int argc,
 		}
 		argc--; argv++;
 	}
-	tail = addattr_nest(n, 1024, TCA_OPTIONS);
+	tail = NLMSG_TAIL(n);
+	addattr_l(n, 1024, TCA_OPTIONS, NULL, 0);
 	addattr_l(n, 2024, TCA_HTB_INIT, &opt, NLMSG_ALIGN(sizeof(opt)));
 	if (direct_qlen != ~0U)
 		addattr_l(n, 2024, TCA_HTB_DIRECT_QLEN,
 			  &direct_qlen, sizeof(direct_qlen));
-	addattr_nest_end(n, tail);
+	tail->rta_len = (void *) NLMSG_TAIL(n) - (void *) tail;
 	return 0;
 }
 
@@ -253,7 +254,8 @@ static int htb_parse_class_opt(struct qdisc_util *qu, int argc, char **argv, str
 	}
 	opt.cbuffer = tc_calc_xmittime(ceil64, cbuffer);
 
-	tail = addattr_nest(n, 1024, TCA_OPTIONS);
+	tail = NLMSG_TAIL(n);
+	addattr_l(n, 1024, TCA_OPTIONS, NULL, 0);
 
 	if (rate64 >= (1ULL << 32))
 		addattr_l(n, 1124, TCA_HTB_RATE64, &rate64, sizeof(rate64));
@@ -264,7 +266,7 @@ static int htb_parse_class_opt(struct qdisc_util *qu, int argc, char **argv, str
 	addattr_l(n, 2024, TCA_HTB_PARMS, &opt, sizeof(opt));
 	addattr_l(n, 3024, TCA_HTB_RTAB, rtab, 1024);
 	addattr_l(n, 4024, TCA_HTB_CTAB, ctab, 1024);
-	addattr_nest_end(n, tail);
+	tail->rta_len = (void *) NLMSG_TAIL(n) - (void *) tail;
 	return 0;
 }
 

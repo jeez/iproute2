@@ -90,7 +90,8 @@ static int bpf_parse_opt(struct action_util *a, int *ptr_argc, char ***ptr_argv,
 
 	NEXT_ARG();
 
-	tail = addattr_nest(n, MAX_MSG, tca_id);
+	tail = NLMSG_TAIL(n);
+	addattr_l(n, MAX_MSG, tca_id, NULL, 0);
 
 	while (argc > 0) {
 		if (matches(*argv, "run") == 0) {
@@ -142,7 +143,7 @@ opt_bpf:
 	}
 
 	addattr_l(n, MAX_MSG, TCA_ACT_BPF_PARMS, &parm, sizeof(parm));
-	addattr_nest_end(n, tail);
+	tail->rta_len = (char *)NLMSG_TAIL(n) - (char *)tail;
 
 	if (bpf_uds_name)
 		ret = bpf_send_map_fds(bpf_uds_name, bpf_obj);

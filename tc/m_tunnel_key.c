@@ -98,7 +98,8 @@ static int parse_tunnel_key(struct action_util *a, int *argc_p, char ***argv_p,
 	if (matches(*argv, "tunnel_key") != 0)
 		return -1;
 
-	tail = addattr_nest(n, MAX_MSG, tca_id);
+	tail = NLMSG_TAIL(n);
+	addattr_l(n, MAX_MSG, tca_id, NULL, 0);
 
 	NEXT_ARG();
 
@@ -195,7 +196,7 @@ static int parse_tunnel_key(struct action_util *a, int *argc_p, char ***argv_p,
 
 	parm.t_action = action;
 	addattr_l(n, MAX_MSG, TCA_TUNNEL_KEY_PARMS, &parm, sizeof(parm));
-	addattr_nest_end(n, tail);
+	tail->rta_len = (char *)NLMSG_TAIL(n) - (char *)tail;
 
 	*argc_p = argc;
 	*argv_p = argv;
